@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 #include <map>
+
+#define INF 99999999.0f
 using namespace std;
 
 struct HeapNode{
@@ -27,7 +29,7 @@ public:
         }
     }
 
-    void addNode(int pi = -1, float d = 99999999.0f){
+    void addNode(int pi = -1, float d = INF){
         HeapNode node(heap.size(), pi, d); // id = n + 1
         float temp = node.d;
         heap.push_back(node);
@@ -39,6 +41,16 @@ public:
     HeapNode getNodeById(int id){
         if(indexTable.find(id) == indexTable.end()) return heap[0];
         return heap[ indexTable[id] ];
+    }
+    
+    int findParentIdById(int id){
+        if(indexTable.find(id) == indexTable.end()) return -1;
+        heap[indexTable[id]].pi;
+    }
+
+    int findParentIdByNode(HeapNode n){
+        if(indexTable.find(n.id) == indexTable.end()) return -1;
+        return n.pi;
     }
 
     void decreaseKey(HeapNode n, float key){
@@ -57,6 +69,16 @@ public:
         for(int index = i; index > 0 && key < heap[index/2].d; index /= 2)
             swap(index, index / 2);
     }
+
+    HeapNode extractMin(){
+        if(heap.size() == 1) return heap[0];
+        HeapNode returnNode = heap[1];
+        swap(1, heap.size() - 1);
+        heap.pop_back();
+        heapify(heap[1]);
+        return returnNode;
+    }
+
 
     void heapify(HeapNode n){
         int root = indexTable[n.id];
