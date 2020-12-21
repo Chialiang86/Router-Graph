@@ -4,6 +4,7 @@
         "limits": "cpp",
         "xstring": "cpp",
         "list": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "vector": "cpp"
     }
 }

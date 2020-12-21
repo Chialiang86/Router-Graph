@@ -4,16 +4,10 @@
 #include <string>
 #include <list>
 #include <map>
-#include <algorithm>
 #include "RouterSP.h"
 using namespace std;
 
-struct Point{
-    int x;
-    int y;
-    Point(int x, int y) : x(x), y(y) {}
-    Point() {x = 0; y = 0;}
-};
+
 
 int main(int argc, char *argv[])
 {
@@ -73,22 +67,11 @@ int main(int argc, char *argv[])
 
 
     RouterSP * dijk = new RouterSP(4, 4, 2, 3);
-    dijk->initAdjList();
     dijk->initMinQ();
-
-    list<int> l;
-    l.push_back(0);
-    l.push_back(1);
-    l.push_back(2);
-    l.push_back(3);
-    l.push_back(4);
-    l.push_back(5);
-    l.push_back(6);
-    l.push_back(7);
-    l.push_back(8);
-    for(list<int>::iterator i = l.begin(); i != l.end(); ++i){
-        cout << *i << endl;
-    }
+    dijk->initAdjList();
+    dijk->Dijkstra(from[0].x, from[0].y);
+    dijk->printRes(to[0].x, to[0].y);
+    
 
     return 0;
 }
@@ -103,4 +86,17 @@ int main(int argc, char *argv[])
     cout << "p of 2 = " << heap.findParentIdById(2) << endl;  
     cout << "p of 1 = " << heap.findParentIdById(1) << endl;  
     cout << "p of 0 = " << heap.findParentIdById(0) << endl;  
+    list<int> l;
+    l.push_back(0);
+    l.push_back(1);
+    l.push_back(2);
+    l.push_back(3);
+    l.push_back(4);
+    l.push_back(5);
+    l.push_back(6);
+    l.push_back(7);
+    l.push_back(8);
+    for(list<int>::iterator i = l.begin(); i != l.end(); ++i){
+        cout << *i << endl;
+    }
     */

@@ -1,36 +1,32 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include "DataType.h"
 
 #define INF 99999999.0f
 using namespace std;
 
-struct HeapNode{
-    int id;
-    int pi; // id of predecessor
-    float d; // distance to start point
-    HeapNode(int id, int parent, float distance) : id(id), pi(parent), d(distance) {} 
-    HeapNode(int id) : id(id) {pi = -1; d = 0;}
-    HeapNode() { id = -1; d = 0; pi = -1;}
-};
-
 class MinHeap{
 public:
     MinHeap(int size = 12){
-        heap.push_back(HeapNode()); //dummy node
+        heap.push_back(Node()); //dummy node
     }
     
     MinHeap(int m, int n){
-        heap.push_back(HeapNode()); //dummy node
+        heap.push_back(Node()); //dummy node
         int nodes = m * n;
-        for(int i = 1; i <= nodes; ++i){
-            indexTable[i] = i;
-            heap.push_back(HeapNode(i));
+        for(int i = 0; i < nodes; ++i){
+            indexTable[i] = i + 1;
+            heap.push_back(Node(i, -1, INF));
         }
     }
 
+    bool isEmpty(){
+        return heap.size() <= 1;
+    }
+
     void addNode(int pi = -1, float d = INF){
-        HeapNode node(heap.size() - 1, pi, d); // id = n
+        Node node(heap.size() - 1, pi, d); // id = n
         float temp = node.d;
         indexTable[node.id] = heap.size() - 1;
         heap.push_back(node);
@@ -38,7 +34,7 @@ public:
             swap(index, index / 2);
     }
 
-    HeapNode getNodeById(int id){
+    Node getNodeById(int id){
         if(indexTable.find(id) == indexTable.end()) return heap[0];
         return heap[ indexTable[id] ];
     }
@@ -48,12 +44,12 @@ public:
         return heap[indexTable[id]].pi;
     }
 
-    int findParentIdByNode(HeapNode n){
+    int findParentIdByNode(Node n){
         if(indexTable.find(n.id) == indexTable.end()) return -1;
         return n.pi;
     }
 
-    void decreaseKey(HeapNode n, float key){
+    void decreaseKey(Node n, float key){
         int i = indexTable[n.id];
         if(heap[i].d < key) return;
         heap[i].d = key;
@@ -70,17 +66,23 @@ public:
             swap(index, index / 2);
     }
 
-    HeapNode extractMin(){
+    Node extractMin(){
         if(heap.size() == 1) return heap[0];
-        HeapNode returnNode = heap[1];
+        Node returnNode = heap[1];
         swap(1, heap.size() - 1);
         heap.pop_back();
         heapify(heap[1]);
         return returnNode;
     }
 
+    void setPi(int uid, int vid){
+        if(indexTable.find(uid) == indexTable.end() || indexTable.find(vid) == indexTable.end())
+            return;
+        int vindex = indexTable[vid];
+        heap[vindex].pi = uid;
+    }
 
-    void heapify(HeapNode n){
+    void heapify(Node n){
         int root = indexTable[n.id];
         int min = -1;
         if(2 * root < heap.size())
@@ -94,7 +96,7 @@ public:
     }
 
     void swap(int l, int r){
-        HeapNode temp = heap[l];
+        Node temp = heap[l];
         heap[l] = heap[r];
         indexTable[heap[l].id] = l;
         heap[r] = temp;
@@ -109,6 +111,6 @@ public:
     }
 
 private:
-    vector<HeapNode> heap;
+    vector<Node> heap;
     map<int, int> indexTable;
 };
