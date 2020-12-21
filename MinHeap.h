@@ -30,10 +30,10 @@ public:
     }
 
     void addNode(int pi = -1, float d = INF){
-        HeapNode node(heap.size(), pi, d); // id = n + 1
+        HeapNode node(heap.size() - 1, pi, d); // id = n
         float temp = node.d;
-        heap.push_back(node);
         indexTable[node.id] = heap.size() - 1;
+        heap.push_back(node);
         for(int index = heap.size() - 1; index > 0 && temp < heap[index/2].d; index /= 2)
             swap(index, index / 2);
     }
@@ -45,7 +45,7 @@ public:
     
     int findParentIdById(int id){
         if(indexTable.find(id) == indexTable.end()) return -1;
-        heap[indexTable[id]].pi;
+        return heap[indexTable[id]].pi;
     }
 
     int findParentIdByNode(HeapNode n){
