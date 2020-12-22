@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <stack>
 #include <fstream>
-#include "MinHeap.h"
+#include "MinHeap.hpp"
 
 class RouterSP{
 public:

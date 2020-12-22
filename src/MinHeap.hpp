@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include "DataType.h"
+#include "DataType.hpp"
 
 #define INF (double)(0x7ff0000000000000) //ieee754 INF
 using namespace std;

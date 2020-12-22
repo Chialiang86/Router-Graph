@@ -4,7 +4,7 @@
 #include <string>
 #include <list>
 #include <map>
-#include "RouterSP.h"
+#include "RouterSP.hpp"
 using namespace std;
 
 int main(int argc, char *argv[])
