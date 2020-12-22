@@ -8,11 +8,8 @@ using namespace std;
 
 class MinHeap{
 public:
-    MinHeap(int size = 12){
-        heap.push_back(HeapNode()); //dummy node
-    }
     
-    MinHeap(int m, int n) : numNode(m * n){
+    MinHeap(int m = 4, int n = 4) : numNode(m * n){
         heap.push_back(HeapNode()); //dummy node
         for(int i = 0; i < numNode; ++i){
             indexTable[i] = i + 1;

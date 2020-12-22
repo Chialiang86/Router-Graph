@@ -63,10 +63,9 @@ int main(int argc, char *argv[])
         }
     }
     fin.close();
-
-
+    
     // router processing
-    RouterSP * router = new RouterSP(4, 4, 2, 3);
+    RouterSP * router = new RouterSP(m, n, capacity, numNet);
     router->initMinQ();
     router->initAdjList();
     for(int i = 0; i < ids.size(); ++i)

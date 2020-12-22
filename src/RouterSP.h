@@ -36,6 +36,13 @@ public:
     }
 
     void routeAndOutput(ofstream& fout, int routeId, const Point& from, const Point& to){
+        
+        if(!pointIsLegal(from) || !pointIsLegal(to)){
+            cout << "start point or end point is illegal" << endl;
+            cout << "->  0 <= x < " << m << " ; " << "0 <= y < " << n << endl; 
+            return;
+        }
+        
         minQ->resetHeap();
         Dijkstra(from);
         printResUpdateWeight(fout, routeId, from, to);
@@ -100,6 +107,12 @@ public:
     }
 
 private:
+
+    bool pointIsLegal(Point p){
+        if(p.x < 0 || p.x >= m || p.y < 0 || p.y >= n)
+            return false;
+        return true;
+    }
     
     void relax(const HeapNode& u, const HeapNode& v){
         int w = adjFindWeight(u.id, v.id);
