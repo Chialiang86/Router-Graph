@@ -1,16 +1,21 @@
 
 
-struct Node{
+struct HeapNode{
     int id;
     int pi; // id of predecessor
-    float d; // distance to start point
-    Node(int id, int parent = -1, float weight = 0) : id(id), pi(parent), d(weight) {} 
-    Node() { id = -1; d = 0; pi = -1;}
+    double d; // distance to start point
+    HeapNode(int id = -1, int parent = -1, float weight = 0) : id(id), pi(parent), d(weight) {} 
+};
+
+struct AdjNode{
+    int id;
+    int weight;
+    int capacity;
+    AdjNode(int id = -1, int w = 0, int c = 0) : id(id), weight(w), capacity(c){}
 };
 
 struct Point{
     int x;
     int y;
-    Point(int x, int y) : x(x), y(y) {}
-    Point() {x = 0; y = 0;}
+    Point(int x = 0, int y = 0) : x(x), y(y) {}
 };

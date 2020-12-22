@@ -2,6 +2,8 @@
 
 #include <list>
 #include <algorithm>
+#include <stack>
+#include <fstream>
 #include "MinHeap.h"
 
 class RouterSP{
@@ -15,7 +17,7 @@ public:
         minQ = new MinHeap(m, n);
         resSP.resize(m * n);
         for(int i = 0; i < resSP.size(); ++i)
-            resSP[i] = Node(i, -1, INF);
+            resSP[i] = HeapNode(i, -1, INF);
     }
 
     void initAdjList(){
@@ -23,39 +25,83 @@ public:
         adjList.resize(size);
         for(int i = 0; i < size; ++i){
             if(i + n < size)
-                adjList[i].push_back(Node(i + n));
+                adjList[i].push_back(AdjNode(i + n, 0, capacity));
             if(i + 1 < size && (i + 1) % n != 0)
-                adjList[i].push_back(Node(i + 1));
+                adjList[i].push_back(AdjNode(i + 1, 0, capacity));
             if(i - 1 >= 0 && i % n != 0)
-                adjList[i].push_back(Node(i - 1));
+                adjList[i].push_back(AdjNode(i - 1, 0, capacity));
             if(i - n >= 0)
-                adjList[i].push_back(Node(i - n));
+                adjList[i].push_back(AdjNode(i - n, 0, capacity));
         }
-        /*
-        for(int i = 0; i < size; ++i){
-            for(list<Node>::iterator item = adjList[i].begin(); item != adjList[i].end(); item++){
-                cout << i << " " << item->id << " " << item->d << endl;
-            }
-            cout << endl;
-        }*/
     }
 
-    void Dijkstra(int startx, int starty){
-        int startID = startx * n + starty;
+    void routeAndOutput(ofstream& fout, int routeId, const Point& from, const Point& to){
+        minQ->resetHeap();
+        Dijkstra(from);
+        printResUpdateWeight(fout, routeId, from, to);
+    }
+
+    void Dijkstra(const Point& startPos){
+        int startID = startPos.x * n + startPos.y;
 
         minQ->decreaseKey(startID, 0.0f); // 
 
-        Node u;
+        HeapNode u;
         while(!minQ->isEmpty()){
             u = minQ->extractMin();
             resSP[u.id] = u;
-            for(list<Node>::iterator v = adjList[u.id].begin(); v != adjList[u.id].end(); ++v)
+            for(list<AdjNode>::iterator v = adjList[u.id].begin(); v != adjList[u.id].end(); ++v)
                 relax(u, minQ->getNodeById(v->id));
         }
     }
+    
+    
+    void printResUpdateWeight(ofstream& fout, int routeId, const Point& from, const Point& to){
+        int fromPos = from.x * n + from.y;
+        int v = to.x * n + to.y, u;
+        stack<int> path;
+        while(v != fromPos){
+            path.push(v);
+            u = resSP[v].pi;
+            if(!adjUpdateWeight(u, v)) break;
+            v = u;
+        }
+        path.push(v);
+        adjUpdateWeight(u, v);
 
+        fout << routeId << " " << path.size() - 1 << endl;
+        cout << routeId << " " << path.size() - 1 << endl;
 
-    void relax(Node u, Node v){
+        u = path.top();
+        path.pop();
+        while(!path.empty()){
+            v = path.top();
+            fout << u / n << " " << u % n << " " << v / n << " " << v % n << endl;
+            cout << u / n << " " << u % n << " " << v / n << " " << v % n << endl;
+            u = v;
+            path.pop();
+        }
+    }
+
+    int countOverflow(){
+        int size = m * n;
+        int temp;
+        int numOverflow = 0;
+        cout << "< overflow counting >" << endl;
+        for(int i = 0; i < size; ++i){
+            for(list<AdjNode>::iterator item = adjList[i].begin(); item != adjList[i].end(); item++){
+                if(item->capacity < 0){
+                    numOverflow += -item->capacity;
+                    //cout << "at:(" << i << "," << item->id << ")  overflow:" << -item->capacity << endl;
+                }
+            }
+        }
+        return numOverflow / 2;
+    }
+
+private:
+    
+    void relax(const HeapNode& u, const HeapNode& v){
         int w = adjFindWeight(u.id, v.id);
         if(w < 0) return;
         if(v.d > u.d + w){
@@ -65,37 +111,50 @@ public:
     }
     
     int adjFindWeight(int uid, int vid){
-        for(list<Node>::iterator item = adjList[uid].begin(); item != adjList[uid].end(); item++)
+        for(list<AdjNode>::iterator item = adjList[uid].begin(); item != adjList[uid].end(); item++)
             if(item->id == vid)
-                return item->d;
+                return item->weight;
         return -1;
     }
 
-    
-    void printRes(int tox, int toy){
-        int pos = tox * n + toy;
-        int startPos = 2 * n + 3;
-        vector<int> path;
-        while(pos != startPos){
-            path.push_back(pos);
-            pos = resSP[pos].pi;
+    bool adjUpdateWeight(int uid, int vid){
+        bool udone = false, vdone = false;
+        for(list<AdjNode>::iterator item = adjList[uid].begin(); item != adjList[uid].end(); item++){
+            if(item->id == vid){
+                udone = true;
+                item->weight = updatePolicy(item->weight);
+                item->capacity--;
+                break;
+            }
         }
-        path.push_back(11);
 
-        for(int i = path.size() - 1; i > 0; --i)
-            cout << "(" << path[i]/n << "," << path[i]%n << ")" << "->" << "(" << path[i - 1]/n << "," << path[i - 1]%n << ")"  << endl;
+        for(list<AdjNode>::iterator item = adjList[vid].begin(); item != adjList[vid].end(); item++){
+            if(item->id == uid){
+                vdone = true;
+                item->weight = updatePolicy(item->weight);
+                item->capacity--;
+                break;
+            }
+        }
+
+        return udone && vdone;
     }
 
-private:
+    double updatePolicy(double w){
+        if(w < 0){
+            cout << "update policy err" << endl;
+            return -1;
+        } 
+        return w > 0 ? w * 2 : 1;
+    }
+
     int m;
     int n;
     int capacity;
     int numNet;
     MinHeap * minQ;
-    vector<Node> resSP;
-    vector< list<Node> > adjList;
+    vector<HeapNode> resSP;
+    vector< list<AdjNode> > adjList;
     vector< vector<int> > pathLog;
-    
-    int * pi;
 
 };

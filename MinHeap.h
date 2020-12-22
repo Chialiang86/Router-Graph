@@ -3,21 +3,41 @@
 #include <map>
 #include "DataType.h"
 
-#define INF 99999999.0f
+#define INF (double)(0x7ff0000000000000) //ieee754 INF
 using namespace std;
 
 class MinHeap{
 public:
     MinHeap(int size = 12){
-        heap.push_back(Node()); //dummy node
+        heap.push_back(HeapNode()); //dummy node
     }
     
-    MinHeap(int m, int n){
-        heap.push_back(Node()); //dummy node
-        int nodes = m * n;
-        for(int i = 0; i < nodes; ++i){
+    MinHeap(int m, int n) : numNode(m * n){
+        heap.push_back(HeapNode()); //dummy node
+        for(int i = 0; i < numNode; ++i){
             indexTable[i] = i + 1;
-            heap.push_back(Node(i, -1, INF));
+            heap.push_back(HeapNode(i, -1, INF));
+        }
+    }
+
+    void resetHeap(){
+        if(heap.size() == numNode + 1) return;
+        heap.clear();
+        heap.push_back(HeapNode()); //dummy node
+        for(int i = 0; i < numNode; ++i){
+            indexTable[i] = i + 1;
+            heap.push_back(HeapNode(i, -1, INF));
+        }
+    }
+    
+    void resetHeap(int m, int n){
+        if(heap.size() == m * n + 1) return;
+        heap.clear();
+        heap.push_back(HeapNode()); //dummy node
+        numNode = m * n;
+        for(int i = 0; i < numNode; ++i){
+            indexTable[i] = i + 1;
+            heap.push_back(HeapNode(i, -1, INF));
         }
     }
 
@@ -25,39 +45,21 @@ public:
         return heap.size() <= 1;
     }
 
-    void addNode(int pi = -1, float d = INF){
-        Node node(heap.size() - 1, pi, d); // id = n
-        float temp = node.d;
+    void addNode(int pi = -1, double d = INF){
+        HeapNode node(heap.size() - 1, pi, d); // id = n
+        double temp = node.d;
         indexTable[node.id] = heap.size() - 1;
         heap.push_back(node);
         for(int index = heap.size() - 1; index > 0 && temp < heap[index/2].d; index /= 2)
             swap(index, index / 2);
     }
 
-    Node getNodeById(int id){
+    HeapNode getNodeById(int id){
         if(indexTable.find(id) == indexTable.end()) return heap[0];
         return heap[ indexTable[id] ];
     }
-    
-    int findParentIdById(int id){
-        if(indexTable.find(id) == indexTable.end()) return -1;
-        return heap[indexTable[id]].pi;
-    }
 
-    int findParentIdByNode(Node n){
-        if(indexTable.find(n.id) == indexTable.end()) return -1;
-        return n.pi;
-    }
-
-    void decreaseKey(Node n, float key){
-        int i = indexTable[n.id];
-        if(heap[i].d < key) return;
-        heap[i].d = key;
-        for(int index = i; index > 0 && key < heap[index/2].d; index /= 2)
-            swap(index, index / 2);
-    }
-
-    void decreaseKey(int id, float key){
+    void decreaseKey(int id, double key){
         if(indexTable.find(id) == indexTable.end()) return;
         int i = indexTable[id];
         if(heap[i].d < key) return;
@@ -66,13 +68,13 @@ public:
             swap(index, index / 2);
     }
 
-    Node extractMin(){
+    HeapNode extractMin(){
         if(heap.size() == 1) return heap[0];
-        Node returnNode = heap[1];
+        HeapNode returnHeapNode = heap[1];
         swap(1, heap.size() - 1);
         heap.pop_back();
         heapify(heap[1]);
-        return returnNode;
+        return returnHeapNode;
     }
 
     void setPi(int uid, int vid){
@@ -82,7 +84,7 @@ public:
         heap[vindex].pi = uid;
     }
 
-    void heapify(Node n){
+    void heapify(HeapNode& n){
         int root = indexTable[n.id];
         int min = -1;
         if(2 * root < heap.size())
@@ -96,7 +98,7 @@ public:
     }
 
     void swap(int l, int r){
-        Node temp = heap[l];
+        HeapNode temp = heap[l];
         heap[l] = heap[r];
         indexTable[heap[l].id] = l;
         heap[r] = temp;
@@ -111,6 +113,7 @@ public:
     }
 
 private:
-    vector<Node> heap;
+    vector<HeapNode> heap;
     map<int, int> indexTable;
+    int numNode;
 };
